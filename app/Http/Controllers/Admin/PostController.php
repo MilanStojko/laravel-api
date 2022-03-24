@@ -6,23 +6,26 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Post;
 use App\Category;
+use App\Tag;
 use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
 
     protected $validation = [
-        'title'=>'required|max:50',
-        'content'=>'required',
-        'category_id'=>'nullable|exists:categories,id'
+        'title' => 'required|max:50',
+        'content' => 'required',
+        'category_id' => 'nullable|exists:categories,id',
+        'tags' => 'nullable|exists:tags,id'
     ];
 
-    protected function slug($title = "", $id = ""){
+    protected function slug($title = "", $id = "")
+    {
         $tmp = Str::slug($title);
         $count = 1;
-        while(Post::where('slug', $tmp)->where('id', '!=', $id)->first()){
-            $tmp = Str::slug($title)."-".$count;
-            $count ++;
+        while (Post::where('slug', $tmp)->where('id', '!=', $id)->first()) {
+            $tmp = Str::slug($title) . "-" . $count;
+            $count++;
         }
         return $tmp;
     }
@@ -43,11 +46,10 @@ class PostController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {
-        {
+    { {
             $categories = Category::all();
-            $post = Post::all();
-            return view('admin.posts.create', compact(['post', 'categories']));
+            $tags = Tag::all();
+            return view('admin.posts.create', compact(['categories', 'tags']));
         }
     }
 
@@ -59,18 +61,18 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate( $this->validation);
+        $request->validate($this->validation);
 
-        $form_data = $request->all();
+        $data = $request->all();
 
-        $form_data['slug']=$this->slug($form_data["title"]);
-        
+        $data['slug'] = $this->slug($data["title"]);
+
         $newPost = new Post();
 
-        $newPost->fill($form_data);
+        $newPost->fill($data);
         $newPost->save();
+        $newPost->tags()->sync(isset($data['tags']) ? $data['tags'] : []);
         return redirect()->route('admin.posts.index');
-
     }
 
     /**
@@ -93,7 +95,8 @@ class PostController extends Controller
     public function edit(Post $post)
     {
         $categories = Category::all();
-        return view('admin.posts.edit', compact(['post', 'categories']));
+        $tags = Tag::all();
+        return view('admin.posts.edit', compact(['post', 'categories', 'tags']));
     }
 
     /**
@@ -105,13 +108,16 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        $request->validate( $this->validation);
+        $request->validate($this->validation);
 
         $data = $request->all();
 
         $data["slug"] = ($post->title == $data['title']) ? $post->slug : $this->slug($data["title"], $post->id);
 
         $post->update($data);
+
+        $post->tags()->sync(isset($data['tags']) ? $data['tags'] : []);
+
         return redirect()->route('admin.posts.index');
     }
 

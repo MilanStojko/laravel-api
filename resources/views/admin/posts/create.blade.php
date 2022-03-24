@@ -28,6 +28,15 @@
                 @endforeach
             </select>
         </div>
+        @foreach ($tags as $tag)
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="tags[]" value="{{$tag->id}}" id="{{$tag->slug}}"
+                {{ in_array($tag->id, old('tags', [])) ? " checked" : ""}}>
+                <label class="form-check-label" for="{{$tag->slug}}">
+                    {{$tag->name}}
+                </label>
+            </div>
+        @endforeach
         <button type="submit" class="btn btn-primary">Crea</button>
     </form>
 
