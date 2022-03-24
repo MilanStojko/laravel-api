@@ -8,8 +8,9 @@ use App\Post;
 
 class PostController extends Controller
 {
-    public function index(){
-        $post=Post::all();
+    public function index()
+    {
+        $post = Post::with('category', 'tags')->get();
         return response()->json($post);
     }
 }
