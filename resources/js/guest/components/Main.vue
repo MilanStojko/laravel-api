@@ -1,15 +1,6 @@
 <template>
   <div>
-    <div v-for="(post, index) in posts" :key="index">
-      <h3>{{ post.title }}</h3>
-      <h5>{{ post.content }}</h5>
-      <p>{{ post.category ? post.category.name : "" }}</p>
-      <p>
-        <span v-for="(tag, index) in post.tags" :key="index">
-          {{ tag.name + "" }}
-        </span>
-      </p>
-    </div>
+    <router-view></router-view>
   </div>
 </template>
 
